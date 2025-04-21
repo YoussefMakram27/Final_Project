@@ -1,0 +1,33 @@
+running egg_info
+creating ../../build/pyserial_connection/pyserial_connection.egg-info
+writing ../../build/pyserial_connection/pyserial_connection.egg-info/PKG-INFO
+writing dependency_links to ../../build/pyserial_connection/pyserial_connection.egg-info/dependency_links.txt
+writing entry points to ../../build/pyserial_connection/pyserial_connection.egg-info/entry_points.txt
+writing requirements to ../../build/pyserial_connection/pyserial_connection.egg-info/requires.txt
+writing top-level names to ../../build/pyserial_connection/pyserial_connection.egg-info/top_level.txt
+writing manifest file '../../build/pyserial_connection/pyserial_connection.egg-info/SOURCES.txt'
+reading manifest file '../../build/pyserial_connection/pyserial_connection.egg-info/SOURCES.txt'
+writing manifest file '../../build/pyserial_connection/pyserial_connection.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/youssef/GP_Project/build/pyserial_connection/build
+creating /home/youssef/GP_Project/build/pyserial_connection/build/lib
+creating /home/youssef/GP_Project/build/pyserial_connection/build/lib/pyserial_connection
+copying pyserial_connection/__init__.py -> /home/youssef/GP_Project/build/pyserial_connection/build/lib/pyserial_connection
+running install
+running install_lib
+creating /home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection
+copying /home/youssef/GP_Project/build/pyserial_connection/build/lib/pyserial_connection/__init__.py -> /home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection
+byte-compiling /home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/youssef/GP_Project/install/pyserial_connection/share/ament_index
+creating /home/youssef/GP_Project/install/pyserial_connection/share/ament_index/resource_index
+creating /home/youssef/GP_Project/install/pyserial_connection/share/ament_index/resource_index/packages
+copying resource/pyserial_connection -> /home/youssef/GP_Project/install/pyserial_connection/share/ament_index/resource_index/packages
+copying package.xml -> /home/youssef/GP_Project/install/pyserial_connection/share/pyserial_connection
+running install_egg_info
+Copying ../../build/pyserial_connection/pyserial_connection.egg-info to /home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection-0.0.0-py3.10.egg-info
+running install_scripts
+Installing motor_controller script to /home/youssef/GP_Project/install/pyserial_connection/lib/pyserial_connection
+Installing motor_receiver script to /home/youssef/GP_Project/install/pyserial_connection/lib/pyserial_connection
+writing list of installed files to '/home/youssef/GP_Project/build/pyserial_connection/install.log'

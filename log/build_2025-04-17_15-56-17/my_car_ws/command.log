@@ -1,0 +1,6 @@
+Invoking command in '/home/youssef/GP_Project/build/my_car_ws': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/youssef/GP_Project/src/my_car_ws -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/youssef/GP_Project/install/my_car_ws
+Invoked command in '/home/youssef/GP_Project/build/my_car_ws' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/youssef/GP_Project/src/my_car_ws -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/youssef/GP_Project/install/my_car_ws
+Invoking command in '/home/youssef/GP_Project/build/my_car_ws': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/youssef/GP_Project/build/my_car_ws -- -j8 -l8
+Invoked command in '/home/youssef/GP_Project/build/my_car_ws' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/youssef/GP_Project/build/my_car_ws -- -j8 -l8
+Invoking command in '/home/youssef/GP_Project/build/my_car_ws': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/youssef/GP_Project/build/my_car_ws
+Invoked command in '/home/youssef/GP_Project/build/my_car_ws' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/youssef/GP_Project/build/my_car_ws

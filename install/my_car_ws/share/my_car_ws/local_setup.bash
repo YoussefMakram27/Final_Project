@@ -1,0 +1,1 @@
+/home/youssef/GP_Project/build/my_car_ws/ament_cmake_environment_hooks/local_setup.bash

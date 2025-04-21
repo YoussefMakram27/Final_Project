@@ -1,0 +1,25 @@
+[0.553s] Invoking command in '/home/youssef/GP_Project/src/pyserial_connection': PYTHONPATH=/home/youssef/GP_Project/build/pyserial_connection/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/pyserial_connection build --build-base /home/youssef/GP_Project/build/pyserial_connection/build install --record /home/youssef/GP_Project/build/pyserial_connection/install.log --single-version-externally-managed install_data
+[0.770s] running egg_info
+[0.770s] writing ../../build/pyserial_connection/pyserial_connection.egg-info/PKG-INFO
+[0.770s] writing dependency_links to ../../build/pyserial_connection/pyserial_connection.egg-info/dependency_links.txt
+[0.771s] writing entry points to ../../build/pyserial_connection/pyserial_connection.egg-info/entry_points.txt
+[0.771s] writing requirements to ../../build/pyserial_connection/pyserial_connection.egg-info/requires.txt
+[0.771s] writing top-level names to ../../build/pyserial_connection/pyserial_connection.egg-info/top_level.txt
+[0.772s] reading manifest file '../../build/pyserial_connection/pyserial_connection.egg-info/SOURCES.txt'
+[0.773s] writing manifest file '../../build/pyserial_connection/pyserial_connection.egg-info/SOURCES.txt'
+[0.773s] running build
+[0.773s] running build_py
+[0.773s] copying pyserial_connection/motor_controller.py -> /home/youssef/GP_Project/build/pyserial_connection/build/lib/pyserial_connection
+[0.773s] running install
+[0.773s] running install_lib
+[0.774s] copying /home/youssef/GP_Project/build/pyserial_connection/build/lib/pyserial_connection/motor_controller.py -> /home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection
+[0.775s] byte-compiling /home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection/motor_controller.py to motor_controller.cpython-310.pyc
+[0.776s] running install_data
+[0.776s] running install_egg_info
+[0.777s] removing '/home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection-0.0.0-py3.10.egg-info' (and everything under it)
+[0.777s] Copying ../../build/pyserial_connection/pyserial_connection.egg-info to /home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages/pyserial_connection-0.0.0-py3.10.egg-info
+[0.778s] running install_scripts
+[0.796s] Installing motor_controller script to /home/youssef/GP_Project/install/pyserial_connection/lib/pyserial_connection
+[0.796s] Installing motor_receiver script to /home/youssef/GP_Project/install/pyserial_connection/lib/pyserial_connection
+[0.796s] writing list of installed files to '/home/youssef/GP_Project/build/pyserial_connection/install.log'
+[0.815s] Invoked command in '/home/youssef/GP_Project/src/pyserial_connection' returned '0': PYTHONPATH=/home/youssef/GP_Project/build/pyserial_connection/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/pyserial_connection build --build-base /home/youssef/GP_Project/build/pyserial_connection/build install --record /home/youssef/GP_Project/build/pyserial_connection/install.log --single-version-externally-managed install_data

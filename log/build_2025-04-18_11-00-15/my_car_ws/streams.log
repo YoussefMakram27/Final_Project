@@ -1,0 +1,37 @@
+[0.008s] Invoking command in '/home/youssef/GP_Project/build/my_car_ws': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/youssef/GP_Project/build/my_car_ws -- -j8 -l8
+[0.040s] Invoked command in '/home/youssef/GP_Project/build/my_car_ws' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/youssef/GP_Project/build/my_car_ws -- -j8 -l8
+[0.048s] Invoking command in '/home/youssef/GP_Project/build/my_car_ws': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/youssef/GP_Project/build/my_car_ws
+[0.054s] -- Install configuration: ""
+[0.054s] -- Execute custom install script
+[0.054s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/lidar.launch.py
+[0.054s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/rsp.launch.py
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/slam_mapping.launch.py
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/spawn_car.launch.py
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/teleop_launch.py
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/common_properties.urdf.xacro
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/my_car.urdf.xacro
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/my_car_base.urdf.xacro
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/my_car_base_gazebo.urdf.xacro
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/my_car_lidar.urdf.xacro
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//worlds/empty_world.world
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//worlds/my_world.world
+[0.055s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//worlds/walls_wallpapers.world
+[0.056s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//maps/my_map.pgm
+[0.056s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//maps/my_map.yaml
+[0.056s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//config/slam_params.yaml
+[0.056s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/ament_index/resource_index/package_run_dependencies/my_car_ws
+[0.056s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/ament_index/resource_index/parent_prefix_path/my_car_ws
+[0.056s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/environment/ament_prefix_path.sh
+[0.056s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/environment/ament_prefix_path.dsv
+[0.057s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/environment/path.sh
+[0.057s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/environment/path.dsv
+[0.057s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/local_setup.bash
+[0.057s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/local_setup.sh
+[0.057s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/local_setup.zsh
+[0.057s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/local_setup.dsv
+[0.057s] -- Symlinking: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/package.dsv
+[0.064s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/ament_index/resource_index/packages/my_car_ws
+[0.065s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/cmake/my_car_wsConfig.cmake
+[0.065s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/cmake/my_car_wsConfig-version.cmake
+[0.065s] -- Up-to-date symlink: /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws/package.xml
+[0.066s] Invoked command in '/home/youssef/GP_Project/build/my_car_ws' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/youssef/GP_Project/build/my_car_ws

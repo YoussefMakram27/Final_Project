@@ -1,0 +1,6 @@
+source;share/pyserial_connection/hook/pythonpath.ps1
+source;share/pyserial_connection/hook/pythonpath.dsv
+source;share/pyserial_connection/hook/pythonpath.sh
+source;share/pyserial_connection/hook/ament_prefix_path.ps1
+source;share/pyserial_connection/hook/ament_prefix_path.dsv
+source;share/pyserial_connection/hook/ament_prefix_path.sh

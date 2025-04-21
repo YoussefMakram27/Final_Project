@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<robot name = "my_car" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+    <xacro:include filename="common_properties.urdf.xacro" />
+    <xacro:include filename="my_car_base.urdf.xacro" />
+    <xacro:include filename="my_car_base_gazebo.urdf.xacro" />
+    <!-- <xacro:include filename="my_car_lidar.urdf.xacro" />  -->
+    
+</robot>
