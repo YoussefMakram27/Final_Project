@@ -5,5 +5,6 @@
     <xacro:include filename="my_car_base.urdf.xacro" />
     <xacro:include filename="my_car_base_gazebo.urdf.xacro" />
     <xacro:include filename="my_car_lidar.urdf.xacro" /> 
+    <!-- <xacro:include filename="ultrasonic.urdf.xacro" />  -->
     
 </robot>

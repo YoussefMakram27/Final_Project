@@ -14,14 +14,14 @@
 
     <gazebo reference="right_front_wheel_link">
         <material>Gazebo/Red</material>
-        <mu1 value="1.0" />
-        <mu2 value="1.0" />
+        <mu1 value="0.01" />
+        <mu2 value="0.01" />
     </gazebo>
 
     <gazebo reference="left_front_wheel_link">
         <material>Gazebo/Red</material>
-        <mu1 value="1.0" />
-        <mu2 value="1.0" />
+        <mu1 value="0.01" />
+        <mu2 value="0.01" />
     </gazebo>
     
     <gazebo reference="right_wheel_link">
@@ -45,11 +45,11 @@
             <left_joint>base_left_wheel_joint</left_joint>
 
             <!-- Physical parameters -->
-            <wheel_separation>0.45</wheel_separation>
-            <wheel_diameter>0.2</wheel_diameter>
+            <wheel_separation>0.26</wheel_separation> <!--0.45 0.2-->
+            <wheel_diameter>0.085</wheel_diameter>
 
             <!-- Acceleration and velocity limits -->
-            <max_wheel_acceleration>4.0</max_wheel_acceleration>
+            <max_wheel_acceleration>2.0</max_wheel_acceleration>
             <max_wheel_torque>4.0</max_wheel_torque>
 
             <!-- ROS topic for velocity commands -->

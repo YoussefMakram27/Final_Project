@@ -11,6 +11,7 @@
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/my_car_base.urdf.xacro
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/my_car_base_gazebo.urdf.xacro
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/my_car_lidar.urdf.xacro
+/home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//urdf/ultrasonic.urdf.xacro
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//worlds/empty_world.world
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//worlds/my_world.world
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//worlds/walls_wallpapers.world

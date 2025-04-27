@@ -19,6 +19,29 @@ class ReactiveNavNode(Node):
         self.rotation_direction = 0.0
         self.initial_move_logged = False  # Flag to log initial forward movement once
 
+        # PID variables for rotation control
+        self.kp = 1.0  # Proportional gain
+        self.ki = 0.1  # Integral gain
+        self.kd = 0.5  # Derivative gain
+        self.previous_error = 0.0
+        self.integral = 0.0
+
+    def pid_control(self, target_angle, current_angle):
+        """
+        Calculate the control signal using PID for smooth rotation.
+        """
+        error = target_angle - current_angle
+        self.integral += error
+        derivative = error - self.previous_error
+
+        # Compute PID output
+        pid_output = self.kp * error + self.ki * self.integral + self.kd * derivative
+
+        # Update previous error for the next calculation
+        self.previous_error = error
+
+        return pid_output
+
     def scan_callback(self, msg: LaserScan):
         ranges = list(msg.ranges)
         ranges = [r if 0.05 < r < 10.0 else 10.0 for r in ranges]
@@ -59,8 +82,10 @@ class ReactiveNavNode(Node):
             rotated_angle = abs(self.angular_speed * elapsed_time)
 
             if rotated_angle < self.min_rotation_angle:
+                # Apply PID control to make the rotation smoother
+                pid_output = self.pid_control(self.min_rotation_angle, rotated_angle)
                 twist.linear.x = 0.0
-                twist.angular.z = self.rotation_direction * self.angular_speed
+                twist.angular.z = self.rotation_direction * pid_output
                 self.get_logger().info(f'Rotating: {math.degrees(rotated_angle):.1f}/{math.degrees(self.min_rotation_angle):.1f} degrees')
             else:
                 # Check if path is clear after minimum rotation
@@ -75,8 +100,9 @@ class ReactiveNavNode(Node):
                     # Path still blocked, continue rotating in place
                     self.get_logger().info('Path still blocked, continuing rotation in place...')
                     twist.linear.x = 0.0
-                    twist.angular.z = self.rotation_direction * self.angular_speed
-                    # Reset rotation start time to track next 30-degree increment
+                    # Continue using PID for smooth control
+                    pid_output = self.pid_control(self.min_rotation_angle, rotated_angle)
+                    twist.angular.z = self.rotation_direction * pid_output
                     self.rotation_start_time = time.time()
 
         else:

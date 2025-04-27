@@ -20,7 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'reactive_nav_node = reactive_nav.reactive_nav_node:main'
+            'reactive_nav_node = reactive_nav.reactive_nav_node:main',
+            'sensor_fusion = reactive_nav.sensor_fusion:main',
+            'pid_control = reactive_nav.pid_control:main'
         ],
     },
 )
