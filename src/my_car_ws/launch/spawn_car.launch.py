@@ -17,7 +17,7 @@ def generate_launch_description():
     rviz = LaunchConfiguration('rviz')
 
     # Path to default world 
-    world_path = os.path.join(get_package_share_directory(package_name), 'worlds', 'walls_wallpapers.world')
+    world_path = os.path.join(get_package_share_directory(package_name), 'worlds', 'empty_world.world')
 
     # Launch Arguments
     declare_world = DeclareLaunchArgument(
@@ -58,21 +58,24 @@ def generate_launch_description():
     )
 
     # Launch Rviz with diff bot rviz file
-    rviz_config_file = os.path.join(get_package_share_directory(package_name), 'rviz', 'bot2.rviz')
+    rviz_config_file = os.path.join(get_package_share_directory(package_name), 'rviz', 'bot3.rviz')
     rviz2 = GroupAction(
-        condition=IfCondition(rviz),
-        actions=[Node(
-            package='rviz2',
-            executable='rviz2',
-            arguments=['-d', rviz_config_file],
-            output='screen',)]
+    condition=IfCondition(rviz),
+    actions=[Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', rviz_config_file],
+        parameters=[{'use_sim_time': True}],
+        output='screen',
+    )]
     )
 
     # Launch all nodes
     return LaunchDescription([
-        declare_rviz,
+        # declare_rviz,
         declare_world,
-        rviz2,
+        # rviz2,
         rsp,
         gazebo,
         spawn_diff_bot,

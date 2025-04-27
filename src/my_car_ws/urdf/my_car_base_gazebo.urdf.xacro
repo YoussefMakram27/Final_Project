@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <!-- Material definitions for visual appearance -->
-    <gazebo reference="base_footprint_link">
+    <gazebo reference="base_link">
         <material>Gazebo/Blue</material>
     </gazebo>
 
@@ -15,24 +14,26 @@
 
     <gazebo reference="right_front_wheel_link">
         <material>Gazebo/Red</material>
+        <mu1 value="1.0" />
+        <mu2 value="1.0" />
     </gazebo>
 
     <gazebo reference="left_front_wheel_link">
         <material>Gazebo/Red</material>
+        <mu1 value="1.0" />
+        <mu2 value="1.0" />
+    </gazebo>
+    
+    <gazebo reference="right_wheel_link">
+        <material>Gazebo/Red</material>
+        <mu1 value="1.0" />
+        <mu2 value="1.0" />
     </gazebo>
 
     <gazebo reference="left_wheel_link">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
-        <kp>100000.0</kp>
-        <kd>1.0</kd>
-    </gazebo>
-
-    <gazebo reference="right_wheel_link">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
-        <kp>100000.0</kp>
-        <kd>1.0</kd>
+        <material>Gazebo/Red</material>
+        <mu1 value="1.0" />
+        <mu2 value="1.0" />
     </gazebo>
 
 
@@ -44,12 +45,12 @@
             <left_joint>base_left_wheel_joint</left_joint>
 
             <!-- Physical parameters -->
-            <wheel_separation>0.26</wheel_separation>
-            <wheel_diameter>0.085</wheel_diameter>
+            <wheel_separation>0.45</wheel_separation>
+            <wheel_diameter>0.2</wheel_diameter>
 
             <!-- Acceleration and velocity limits -->
-            <max_wheel_acceleration>10.0</max_wheel_acceleration>
-            <max_wheel_torque>10.0</max_wheel_torque>
+            <max_wheel_acceleration>4.0</max_wheel_acceleration>
+            <max_wheel_torque>4.0</max_wheel_torque>
 
             <!-- ROS topic for velocity commands -->
             <command_topic>cmd_vel</command_topic>
@@ -57,7 +58,7 @@
             <!-- Odometry settings -->
             <odometry_topic>odom</odometry_topic>
             <odometry_frame>odom</odometry_frame>
-            <robot_base_frame>base_link</robot_base_frame>
+            <robot_base_frame>base_footprint</robot_base_frame>
             <publish_odom>true</publish_odom>
             <publish_odom_tf>true</publish_odom_tf>
             <publish_wheel_tf>false</publish_wheel_tf>

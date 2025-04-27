@@ -1,0 +1,79 @@
+# import rclpy
+# from rclpy.node import Node
+# from sensor_msgs.msg import LaserScan
+# from geometry_msgs.msg import Twist
+
+# class ReactiveNavNode(Node):
+#     def __init__(self):
+#         super().__init__('reactive_nav_node')
+#         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+#         self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
+
+#         self.emergency_stop = False
+#         self.rotating = False  # Flag to check if robot is rotating to find clear space
+
+#     def scan_callback(self, msg: LaserScan):
+#         ranges = list(msg.ranges)
+
+#         # Clean the data: remove 0.0 and large outliers
+#         ranges = [r if 0.05 < r < 10.0 else 10.0 for r in ranges]
+
+#         n = len(ranges)
+#         front = ranges[n//2 - 10 : n//2 + 10]
+#         left = ranges[n//2 + 30 : n//2 + 60]
+#         right = ranges[n//2 - 60 : n//2 - 30]
+
+#         min_front = min(front)
+#         min_left = min(left)
+#         min_right = min(right)
+
+#         twist = Twist()
+
+#         if min_front < 0.5:  # Very close obstacle ahead, emergency stop
+#             self.get_logger().warn(f'EMERGENCY BRAKE! Obstacle detected at {min_front:.2f}m!')
+#             twist.linear.x = 0.0  # Stop forward motion
+#             twist.angular.z = 0.0  # Stop rotation
+#             self.emergency_stop = True
+#             self.rotating = True  # Begin rotating to find clear space
+#         elif self.emergency_stop and self.rotating:
+#             # Rotate in place to scan other directions for a clear path
+#             self.get_logger().info('Scanning for clear space...')
+#             twist.linear.x = 0.0
+#             twist.angular.z = 1.0  # Rotate counter-clockwise (slow turn)
+
+#             # After a few seconds or rotations, check if we can find a clear space
+#             if min_front > 1.5:  # If front is clear enough to move forward
+#                 self.get_logger().info('Clear path found, resuming forward motion.')
+#                 self.emergency_stop = False  # Reset emergency stop flag
+#                 self.rotating = False  # Stop rotating
+#                 twist.linear.x = 0.3  # Resume forward motion
+#                 twist.angular.z = 0.0  # Keep straight
+#         else:
+#             # Normal navigation: obstacle avoidance behavior
+#             if min_front < 2.0:  # Obstacle ahead
+#                 self.get_logger().info(f'Obstacle detected at {min_front:.2f}m! Deciding turn...')
+                
+#                 if min_left > min_right and min_left > 0.5:
+#                     self.get_logger().info('Turning LEFT (left side clearer)')
+#                     twist.linear.x = 0.0
+#                     twist.angular.z = 1.5  # fast left turn
+#                 elif min_right > 0.5:
+#                     self.get_logger().info('Turning RIGHT (right side clearer)')
+#                     twist.linear.x = 0.0
+#                     twist.angular.z = -1.5  # fast right turn
+#                 else:
+#                     self.get_logger().info('Both sides blocked! Turning LEFT by default')
+#                     twist.linear.x = 0.0
+#                     twist.angular.z = 1.5  # safer to pick one side
+#             else:
+#                 twist.linear.x = 0.3  # move forward
+#                 twist.angular.z = 0.0
+
+#         self.cmd_vel_pub.publish(twist)
+
+# def main(args=None):
+#     rclpy.init(args=args)
+#     node = ReactiveNavNode()
+#     rclpy.spin(node)
+#     node.destroy_node()
+#     rclpy.shutdown()

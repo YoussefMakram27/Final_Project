@@ -1,0 +1,18 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/youssef/nav_control/install/perception_pkg/lib/python3.10/site-packages",
+        "/home/youssef/nav_control/install/decision_pkg/lib/python3.10/site-packages",
+        "/home/youssef/nav_control/install/control_pkg/lib/python3.10/site-packages",
+        "/home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/youssef/nav_control/install/perception_pkg/lib/python3.10/site-packages",
+        "/home/youssef/nav_control/install/decision_pkg/lib/python3.10/site-packages",
+        "/home/youssef/nav_control/install/control_pkg/lib/python3.10/site-packages",
+        "/home/youssef/GP_Project/install/pyserial_connection/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

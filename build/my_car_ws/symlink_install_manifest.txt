@@ -1,4 +1,7 @@
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/lidar.launch.py
+/home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/load_map.launch.py
+/home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/navigation.launch.py
+/home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/navigation_launch.py
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/rsp.launch.py
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/slam_mapping.launch.py
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//launch/spawn_car.launch.py
@@ -13,6 +16,8 @@
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//worlds/walls_wallpapers.world
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//maps/my_map.pgm
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//maps/my_map.yaml
+/home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//maps/my_map.yaml.save
+/home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//config/amcl.yaml
 /home/youssef/GP_Project/install/my_car_ws/share/my_car_ws//config/slam_params.yaml
 /home/youssef/GP_Project/install/my_car_ws/share/ament_index/resource_index/package_run_dependencies/my_car_ws
 /home/youssef/GP_Project/install/my_car_ws/share/ament_index/resource_index/parent_prefix_path/my_car_ws
