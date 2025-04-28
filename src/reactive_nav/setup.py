@@ -22,7 +22,8 @@ setup(
         'console_scripts': [
             'reactive_nav_node = reactive_nav.reactive_nav_node:main',
             'sensor_fusion = reactive_nav.sensor_fusion:main',
-            'pid_control = reactive_nav.pid_control:main'
+            'pid_control = reactive_nav.pid_control:main',
+            'keyboard_control = reactive_nav.keyboard_control:main'
         ],
     },
 )

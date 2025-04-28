@@ -8,9 +8,25 @@ import time
 class ReactiveNavNode(Node):
     def __init__(self):
         super().__init__('reactive_nav_node')
+        
+        # Create publisher for velocity commands
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        
+        # Subscribe to laser scan data
         self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
+        
+        # Subscribe to teleop twist commands
+        self.teleop_sub = self.create_subscription(
+            Twist, 
+            '/teleop_cmd_vel',  # Topic from teleop_twist_keyboard
+            self.teleop_callback, 
+            10
+        )
 
+        # Timer to check if teleop is active
+        self.create_timer(0.5, self.check_teleop_timeout)
+        
+        # Reactive navigation variables
         self.emergency_stop = False
         self.rotating = False
         self.rotation_start_time = None
@@ -26,8 +42,17 @@ class ReactiveNavNode(Node):
         self.previous_error = 0.0
         self.integral = 0.0
 
-        # New addition
+        # Direction control
         self.turning_direction = None  # 'left' or 'right'
+        
+        # Teleop control variables
+        self.manual_control = False
+        self.last_teleop_time = time.time()
+        self.teleop_timeout = 0.5  # Return to reactive after this many seconds without teleop input
+        
+        self.get_logger().info('Reactive navigation with teleop override initialized')
+        self.get_logger().info('Run teleop_twist_keyboard in another terminal to take manual control')
+        self.get_logger().info('Command: ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros_args -r /cmd_vel:=/teleop_cmd_vel')
 
     def pid_control(self, target_angle, current_angle):
         """
@@ -44,8 +69,31 @@ class ReactiveNavNode(Node):
         self.previous_error = error
 
         return pid_output
+    
+    def teleop_callback(self, msg):
+        """Handle incoming teleop commands"""
+        # Mark teleop as active
+        self.manual_control = True
+        self.last_teleop_time = time.time()
+        
+        # If this is the first teleop message after reactive mode
+        if not self.manual_control:
+            self.get_logger().info('Teleop control activated')
+            
+        # Forward the teleop command to the robot
+        self.cmd_vel_pub.publish(msg)
+    
+    def check_teleop_timeout(self):
+        """Check if teleop has timed out and we should return to reactive mode"""
+        if self.manual_control and (time.time() - self.last_teleop_time > self.teleop_timeout):
+            self.manual_control = False
+            self.get_logger().info('Teleop timeout. Returning to reactive navigation.')
 
     def scan_callback(self, msg: LaserScan):
+        # Skip reactive navigation logic if in manual control mode
+        if self.manual_control:
+            return
+            
         ranges = list(msg.ranges)
         ranges = [r if 0.05 < r < 10.0 else 10.0 for r in ranges]
 
@@ -153,11 +201,15 @@ class ReactiveNavNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ReactiveNavNode()
-
-    rclpy.spin(node)
     
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.stop_robot()
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
