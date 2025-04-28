@@ -26,6 +26,9 @@ class ReactiveNavNode(Node):
         self.previous_error = 0.0
         self.integral = 0.0
 
+        # New addition
+        self.turning_direction = None  # 'left' or 'right'
+
     def pid_control(self, target_angle, current_angle):
         """
         Calculate the control signal using PID for smooth rotation.
@@ -64,12 +67,11 @@ class ReactiveNavNode(Node):
             self.emergency_stop = True
             self.rotating = False
             self.rotation_start_time = None
-            # Decide rotation direction based on clearer side
+            self.turning_direction = None
             self.rotation_direction = -1.0 if min_right > min_left else 1.0
             self.get_logger().info(f'Robot stopped completely. Decided to rotate {"RIGHT" if self.rotation_direction < 0 else "LEFT"}')
 
         elif self.emergency_stop and not self.rotating:
-            # Start rotating in place after complete stop
             twist.linear.x = 0.0
             twist.angular.z = self.rotation_direction * self.angular_speed
             self.rotating = True
@@ -77,18 +79,15 @@ class ReactiveNavNode(Node):
             self.get_logger().info(f'Starting rotation in place to scan for clear space...')
 
         elif self.emergency_stop and self.rotating:
-            # Continue rotating until minimum angle is reached
             elapsed_time = time.time() - self.rotation_start_time
             rotated_angle = abs(self.angular_speed * elapsed_time)
 
             if rotated_angle < self.min_rotation_angle:
-                # Apply PID control to make the rotation smoother
                 pid_output = self.pid_control(self.min_rotation_angle, rotated_angle)
                 twist.linear.x = 0.0
                 twist.angular.z = self.rotation_direction * pid_output
                 self.get_logger().info(f'Rotating: {math.degrees(rotated_angle):.1f}/{math.degrees(self.min_rotation_angle):.1f} degrees')
             else:
-                # Check if path is clear after minimum rotation
                 if min_front > 0.5:
                     self.get_logger().info('Clear path found, resuming forward motion.')
                     self.emergency_stop = False
@@ -97,10 +96,8 @@ class ReactiveNavNode(Node):
                     twist.linear.x = 0.3
                     twist.angular.z = 0.0
                 else:
-                    # Path still blocked, continue rotating in place
                     self.get_logger().info('Path still blocked, continuing rotation in place...')
                     twist.linear.x = 0.0
-                    # Continue using PID for smooth control
                     pid_output = self.pid_control(self.min_rotation_angle, rotated_angle)
                     twist.angular.z = self.rotation_direction * pid_output
                     self.rotation_start_time = time.time()
@@ -113,24 +110,35 @@ class ReactiveNavNode(Node):
                     self.initial_move_logged = True
                 twist.linear.x = 0.3
                 twist.angular.z = 0.0
+                self.turning_direction = None  # reset any previous turning decision
             elif 1.2 < min_front <= 2.0:
                 self.get_logger().info(f'Obstacle ahead at {min_front:.2f}m: Slowing down.')
                 twist.linear.x = 0.15
                 twist.angular.z = 0.0
-            else:
+                self.turning_direction = None  # reset turning
+            elif 0.5 < min_front <= 1.2:
                 self.get_logger().info(f'Very close obstacle at {min_front:.2f}m: Deciding turn...')
-                if min_left > min_right and min_left > 0.5:
-                    self.get_logger().info('Turning LEFT (left side clearer)')
-                    twist.linear.x = 0.0
+
+                if self.turning_direction is None:
+                    if min_left > min_right and min_left > 0.5:
+                        self.turning_direction = 'left'
+                        self.get_logger().info('Decided: Turning LEFT (left side clearer)')
+                    elif min_right > 0.5:
+                        self.turning_direction = 'right'
+                        self.get_logger().info('Decided: Turning RIGHT (right side clearer)')
+                    else:
+                        self.turning_direction = 'left'
+                        self.get_logger().info('Both sides blocked! Defaulting to turn LEFT')
+
+                twist.linear.x = 0.0
+                if self.turning_direction == 'left':
                     twist.angular.z = 1.5
-                elif min_right > 0.5:
-                    self.get_logger().info('Turning RIGHT (right side clearer)')
-                    twist.linear.x = 0.0
-                    twist.angular.z = -1.5
                 else:
-                    self.get_logger().info('Both sides blocked! Turning LEFT by default')
-                    twist.linear.x = 0.0
-                    twist.angular.z = 1.5
+                    twist.angular.z = -1.5
+            else:
+                self.get_logger().warn(f'Obstacle too close at {min_front:.2f}m! Stopping.')
+                twist.linear.x = 0.0
+                twist.angular.z = 0.0
 
         self.cmd_vel_pub.publish(twist)
 
@@ -145,7 +153,7 @@ class ReactiveNavNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ReactiveNavNode()
- 
+
     rclpy.spin(node)
     
     node.destroy_node()
