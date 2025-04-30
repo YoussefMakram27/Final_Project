@@ -141,7 +141,7 @@ class ReactiveNavNode(Node):
                     self.emergency_stop = False
                     self.rotating = False
                     self.rotation_start_time = None
-                    twist.linear.x = 0.3
+                    twist.linear.x = 0.5
                     twist.angular.z = 0.0
                 else:
                     self.get_logger().info('Path still blocked, continuing rotation in place...')
@@ -156,14 +156,19 @@ class ReactiveNavNode(Node):
                 if not self.initial_move_logged:
                     self.get_logger().info('Car is moving forward: Starting navigation.')
                     self.initial_move_logged = True
-                twist.linear.x = 0.3
+                twist.linear.x = 0.5
                 twist.angular.z = 0.0
                 self.turning_direction = None  # reset any previous turning decision
             elif 1.2 < min_front <= 2.0:
-                self.get_logger().info(f'Obstacle ahead at {min_front:.2f}m: Slowing down.')
-                twist.linear.x = 0.15
+                # Gradually reduce speed by 0.03 for every 0.1m closer than 2.0m
+                distance_to_obstacle = 2.0 - min_front
+                decay_steps = int(distance_to_obstacle / 0.1)
+                speed = max(0.03, 0.3 - (decay_steps * 0.03))  # Don't go below 0.03
+
+                self.get_logger().info(f'Obstacle ahead at {min_front:.2f}m: Slowing down to {speed:.2f} m/s')
+                twist.linear.x = speed
                 twist.angular.z = 0.0
-                self.turning_direction = None  # reset turning
+                self.turning_direction = None
             elif 0.5 < min_front <= 1.2:
                 self.get_logger().info(f'Very close obstacle at {min_front:.2f}m: Deciding turn...')
 
