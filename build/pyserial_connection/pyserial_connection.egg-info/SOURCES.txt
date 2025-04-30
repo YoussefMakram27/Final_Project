@@ -10,7 +10,11 @@ setup.py
 ../../build/pyserial_connection/pyserial_connection.egg-info/zip-safe
 pyserial_connection/__init__.py
 pyserial_connection/motor_controller.py
+pyserial_connection.egg-info/PKG-INFO
+pyserial_connection.egg-info/SOURCES.txt
+pyserial_connection.egg-info/dependency_links.txt
+pyserial_connection.egg-info/entry_points.txt
+pyserial_connection.egg-info/requires.txt
+pyserial_connection.egg-info/top_level.txt
+pyserial_connection.egg-info/zip-safe
 resource/pyserial_connection
-test/test_copyright.py
-test/test_flake8.py
-test/test_pep257.py

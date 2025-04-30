@@ -4,10 +4,15 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 import math
 import time
+import signal
+import sys
+
 
 class ReactiveNavNode(Node):
     def __init__(self):
         super().__init__('reactive_nav_node')
+
+        self.register_signal_handlers()
         
         # Create publisher for velocity commands
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -195,6 +200,18 @@ class ReactiveNavNode(Node):
 
         self.cmd_vel_pub.publish(twist)
 
+
+    def register_signal_handlers(self):
+        signal.signal(signal.SIGINT, self.shutdown_handler)
+        signal.signal(signal.SIGTERM, self.shutdown_handler)
+
+    def shutdown_handler(self, signum, frame):
+        self.get_logger().info('Shutdown signal received. Stopping robot...')
+        self.stop_robot()
+        rclpy.shutdown()
+        sys.exit(0)
+
+
     def stop_robot(self):
         """Publish a zero-velocity command to stop the robot."""
         stop_twist = Twist()
@@ -206,15 +223,14 @@ class ReactiveNavNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ReactiveNavNode()
-    
+
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
+    except Exception as e:
+        node.get_logger().error(f'Unexpected error: {e}')
     finally:
-        node.stop_robot()
         node.destroy_node()
-        rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
