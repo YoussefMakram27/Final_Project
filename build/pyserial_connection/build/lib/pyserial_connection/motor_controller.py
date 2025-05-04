@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 import serial
+import struct
 from geometry_msgs.msg import Twist
 
 class MotorController(Node):
@@ -12,50 +13,41 @@ class MotorController(Node):
 
         # Subscribe to /cmd_vel topic
         self.subscription = self.create_subscription(
-            Twist, '/cmd_vel', self.send_motor_command, 10
+            Twist,
+            '/cmd_vel',
+            self.send_motor_command,
+            10
         )
-        
+
         self.get_logger().info("MotorController Node Started")
 
     def send_motor_command(self, msg):
-        linear_speed = msg.linear.x  # Forward/Backward movement
-        angular_speed = msg.angular.z  # Turning speed
+        linear_speed = msg.linear.x
+        angular_speed = msg.angular.z
 
-        # Define motor speeds
-        left_speed = linear_speed - angular_speed
-        right_speed = linear_speed + angular_speed
+        # Differential drive formula to calculate the speed of the motor
+        motor_speed = linear_speed + angular_speed
 
-        # Scale to a suitable range (e.g., -255 to 255 for PWM)
-        left_pwm = int(left_speed * 255)
-        right_pwm = int(right_speed * 255)
+        # Convert motor speed to PWM range (e.g., -255 to 255)
+        pwm_value = int(motor_speed * 255)
 
-        # Ensure values are within limits
-        left_pwm = max(-255, min(255, left_pwm))
-        right_pwm = max(-255, min(255, right_pwm))
-
-        # Determine command based on movement
-        if linear_speed > 0:  # Moving forward
-            command = "F"
-        elif linear_speed < 0:  # Moving backward
-            command = "B"
-        elif angular_speed > 0:  # Turning left in place
-            command = "L"
-        elif angular_speed < 0:  # Turning right in place
-            command = "R"
-        else:  # Stop
-            command = "S"
+        # Clamp value to int16 range (you can adjust this if needed)
+        pwm_value = max(-32768, min(32767, pwm_value))
 
         try:
             self.serial_port.reset_input_buffer()
-            self.serial_port.write(command.encode())
+
+            # Pack single PWM value into binary (little-endian signed 16-bit integer)
+            data = struct.pack('<h', pwm_value)  # <h for little-endian int16
+
+            # Send the binary data
+            self.serial_port.write(data)
             self.serial_port.flush()
 
-            self.get_logger().info(f"Sent command: {command}")
+            self.get_logger().info(f"Sent PWM value: {pwm_value}")
 
         except serial.SerialException as e:
             self.get_logger().error(f"Serial error: {e}")
-
-        self.get_logger().info(f"{command.strip()}")
 
 def main():
     rclpy.init()

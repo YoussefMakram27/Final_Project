@@ -7,9 +7,8 @@ class MotorController(Node):
     def __init__(self):
         super().__init__('motor_controller')
 
-        # Use fake serial port for testing (adjust this to match your socat setup)
         try:
-            self.serial_port = serial.Serial('/dev/pts/5', 115200, timeout=1)
+            self.serial_port = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
             self.get_logger().info("Node Started.....")
         except serial.SerialException as e:
             self.get_logger().error(f"Failed to connect to serial: {e}")
@@ -27,10 +26,9 @@ class MotorController(Node):
         angular = msg.angular.z
 
         try:
-            if linear > 0.01:  # Moving forward
-                speed = int(max(0, min(1000, linear * 1000)))
-                command = str(speed)
-                self.get_logger().info(f"Sending forward speed: {command}")
+            if linear > 0.01:
+                speed = min(999, int(linear * 1000))  # Cap at 999
+                command = f"{speed:03d}"  # Zero-pad to 3 digits (e.g., "050")
 
             elif linear < -0.01:  # Moving backward
                 command = 'B'
