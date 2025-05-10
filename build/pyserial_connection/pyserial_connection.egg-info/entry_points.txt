@@ -1,4 +1,7 @@
 [console_scripts]
 motor_controller = pyserial_connection.motor_controller:main
 motor_receiver = pyserial_connection.motor_receiver:main
+pyserial_simulator = pyserial_connection.pyserial_simulator:main
+reader = pyserial_connection.reader:main
+readerandsender = pyserial_connection.readerandsender:main
 

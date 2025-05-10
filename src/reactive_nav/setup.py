@@ -28,7 +28,9 @@ setup(
             'sensor_fusion = reactive_nav.sensor_fusion:main',
             'pid_control = reactive_nav.pid_control:main',
             'keyboard_control = reactive_nav.keyboard_control:main',
-            'teleop_controller = reactive_nav.teleop_controller:main'
+            'teleop_controller = reactive_nav.teleop_controller:main',
+            'serial_reader = reactive_nav.serial_reader:main',
+            'camera_decision = reactive_nav.camera_decision:main'
         ],
     },
 )

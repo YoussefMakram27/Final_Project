@@ -21,7 +21,10 @@ setup(
     entry_points={
         'console_scripts': [
             'motor_controller = pyserial_connection.motor_controller:main',
-            'motor_receiver = pyserial_connection.motor_receiver:main'
+            'motor_receiver = pyserial_connection.motor_receiver:main',
+            'reader = pyserial_connection.reader:main',
+            'pyserial_simulator = pyserial_connection.pyserial_simulator:main',
+            'readerandsender = pyserial_connection.readerandsender:main'
         ],
     },
 )
