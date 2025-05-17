@@ -12,7 +12,7 @@ class STMCommunicatorNode(Node):
         super().__init__('stm_communicator_node')
         
         # Declare parameters
-        self.declare_parameter('serial_port', '/dev/pts/5')
+        self.declare_parameter('serial_port', '/dev/ttyUSB0')
         self.declare_parameter('baud_rate', 115200)
         
         # Get parameters
@@ -87,18 +87,22 @@ class STMCommunicatorNode(Node):
                 self.get_logger().error(f"Failed to send motor command: {e}")
     
     def read_sensor_data(self):
-        """Read sensor data from STM."""
         while self.running and rclpy.ok():
             with self.serial_lock:
                 try:
+                    # Clear any old data in the buffer
+                    self.serial.reset_input_buffer()
+                    
                     # Read line from serial
                     line = self.serial.readline().decode('utf-8').strip()
                     if line:
-                        # Parse data (expected format: ultrasonic_left,ultrasonic_right,ultrasonic_front,imux,imuy,imuz,bme,airquality)
+                        self.get_logger().info(f"Raw received: {line}")  # Debug raw data
+                        
+                        # Parse data
                         data = line.split(',')
                         if len(data) == 8:
                             try:
-                                # Extract values
+                                # Extract values - add more error checking
                                 ultrasonic_left = float(data[0])
                                 ultrasonic_right = float(data[1])
                                 ultrasonic_front = float(data[2])
@@ -106,7 +110,14 @@ class STMCommunicatorNode(Node):
                                 imu_y = float(data[4])
                                 imu_z = float(data[5])
                                 bme_temp = float(data[6])
-                                air_quality = data[7]
+                                air_quality = data[7].strip()  # Ensure no extra whitespace
+
+                                # Log received data
+                                self.get_logger().info(
+                                    f"Ultrasonic: L={ultrasonic_left}, R={ultrasonic_right}, F={ultrasonic_front}, "
+                                    f"IMU: x={imu_x}, y={imu_y}, z={imu_z}, "
+                                    f"BME Temp: {bme_temp}, Air Quality: {air_quality}"
+                                )
                                 
                                 # Get current time
                                 current_time = self.get_clock().now().to_msg()

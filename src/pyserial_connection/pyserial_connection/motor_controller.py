@@ -8,7 +8,7 @@ class MotorController(Node):
         super().__init__('motor_controller')
 
         # Initialize serial communication
-        self.serial_port = serial.Serial('/dev/pts/5', 115200, timeout=1)
+        self.serial_port = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
 
         # Subscribe to /cmd_vel topic
         self.subscription = self.create_subscription(

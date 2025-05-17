@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'pyserial_connection'
 
@@ -7,9 +9,15 @@ setup(
     version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/pyserial_connection/launch', ['launch/test_launch.py']),
+        ('lib/pyserial_connection', [
+            'pyserial_connection/readerandsender.py',
+            'pyserial_connection/sensorfusion.py',
+            'pyserial_connection/yolo_simulator.py',
+            'pyserial_connection/pyserial_simulator.py'
+        ]),
     ],
     install_requires=['setuptools', 'pyserial', 'rclpy'],
     zip_safe=True,
@@ -24,7 +32,12 @@ setup(
             'motor_receiver = pyserial_connection.motor_receiver:main',
             'reader = pyserial_connection.reader:main',
             'pyserial_simulator = pyserial_connection.pyserial_simulator:main',
-            'readerandsender = pyserial_connection.readerandsender:main'
+            'readerandsender = pyserial_connection.readerandsender:main',
+            'sensorfusion = pyserial_connection.sensorfusion:main',
+            'yolo_simulator = pyserial_connection.yolo_simulator:main',
+            'simplerone = pyserial_connection.simplerone:main',
+            'claude_reader = pyserial_connection.claude_reader:main',
+            'claude_readerandsender = pyserial_connection.claude_readerandsender:main',
         ],
     },
 )

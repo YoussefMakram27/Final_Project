@@ -8,11 +8,17 @@ setup.py
 ../../build/pyserial_connection/pyserial_connection.egg-info/requires.txt
 ../../build/pyserial_connection/pyserial_connection.egg-info/top_level.txt
 ../../build/pyserial_connection/pyserial_connection.egg-info/zip-safe
+launch/test_launch.py
 pyserial_connection/__init__.py
+pyserial_connection/claude_reader.py
+pyserial_connection/claude_readerandsender.py
 pyserial_connection/motor_controller.py
 pyserial_connection/pyserial_simulator.py
 pyserial_connection/reader.py
 pyserial_connection/readerandsender.py
+pyserial_connection/sensorfusion.py
+pyserial_connection/simplerone.py
+pyserial_connection/yolo_simulator.py
 pyserial_connection.egg-info/PKG-INFO
 pyserial_connection.egg-info/SOURCES.txt
 pyserial_connection.egg-info/dependency_links.txt
