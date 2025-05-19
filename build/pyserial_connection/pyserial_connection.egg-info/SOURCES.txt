@@ -12,6 +12,7 @@ launch/test_launch.py
 pyserial_connection/__init__.py
 pyserial_connection/claude_reader.py
 pyserial_connection/claude_readerandsender.py
+pyserial_connection/claude_sender.py
 pyserial_connection/motor_controller.py
 pyserial_connection/pyserial_simulator.py
 pyserial_connection/reader.py

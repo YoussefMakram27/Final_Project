@@ -1,6 +1,7 @@
 [console_scripts]
 claude_reader = pyserial_connection.claude_reader:main
 claude_readerandsender = pyserial_connection.claude_readerandsender:main
+claude_sender = pyserial_connection.claude_sender:main
 motor_controller = pyserial_connection.motor_controller:main
 motor_receiver = pyserial_connection.motor_receiver:main
 pyserial_simulator = pyserial_connection.pyserial_simulator:main

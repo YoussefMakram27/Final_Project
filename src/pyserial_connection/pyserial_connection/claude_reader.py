@@ -1,225 +1,278 @@
 #!/usr/bin/env python3
-import serial
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, String
-from sensor_msgs.msg import Imu, Range, Temperature
-from geometry_msgs.msg import Vector3
+from sensor_msgs.msg import Range, Imu, Temperature
+from std_msgs.msg import String
+from tf2_ros import TransformBroadcaster
+from geometry_msgs.msg import TransformStamped
+import serial
+import threading
+import time
 
-class SensorDataReader(Node):
+class STM32SensorNode(Node):
     def __init__(self):
-        super().__init__('sensor_data_reader')
+        super().__init__('stm32_sensor_node')
         
-        # Serial port settings
-        self.declare_parameter('port', '/dev/pts/6')
-        self.declare_parameter('baudrate', 115200)
+        # Declare parameters
+        self.declare_parameter('serial_port', '/dev/ttyUSB0')
+        self.declare_parameter('baud_rate', 115200)
+        self.declare_parameter('publish_rate', 20.0)  # Hz
+        self.declare_parameter('debug_level', 'info')  # Add debug level parameter
         
-        self.port = self.get_parameter('port').get_parameter_value().string_value
-        self.baudrate = self.get_parameter('baudrate').get_parameter_value().integer_value
+        # Get parameters
+        self.serial_port = self.get_parameter('serial_port').value
+        self.baud_rate = self.get_parameter('baud_rate').value
+        self.publish_rate = self.get_parameter('publish_rate').value
+        self.debug_level = self.get_parameter('debug_level').value
         
-        # Create publishers for each sensor using standard ROS message types
-        # Ultrasonic sensors using Range message type
+        # Initialize serial connection
+        try:
+            self.ser = serial.Serial(
+                port=self.serial_port,
+                baudrate=self.baud_rate,
+                timeout=0.1
+            )
+            self.get_logger().info(f"Connected to STM32 on {self.serial_port}")
+        except serial.SerialException as e:
+            self.get_logger().error(f"Failed to connect to STM32: {e}")
+            raise
+        
+        # Create publishers for sensor data
         self.ultrasonic_left_pub = self.create_publisher(Range, 'ultrasonic/left', 10)
         self.ultrasonic_right_pub = self.create_publisher(Range, 'ultrasonic/right', 10)
         self.ultrasonic_front_pub = self.create_publisher(Range, 'ultrasonic/front', 10)
+        self.imu_pub = self.create_publisher(Imu, 'imu/data_raw', 10)
+        self.temp_pub = self.create_publisher(Temperature, 'sensors/temperature', 10)
+        self.gas_pub = self.create_publisher(String, 'sensors/air_quality', 10)
         
-        # IMU using Imu message type
-        self.imu_pub = self.create_publisher(Imu, 'imu/data', 10)
+        # Initialize transform broadcaster for IMU
+        self.tf_broadcaster = TransformBroadcaster(self)
         
-        # BME using Temperature message type
-        self.bme_pub = self.create_publisher(Temperature, 'bme/temperature', 10)
+        # Create a timer for publishing data
+        self.timer = self.create_timer(1.0/self.publish_rate, self.timer_callback)
         
-        # Air quality (keeping as String since it's not standard)
-        self.air_quality_pub = self.create_publisher(String, 'air_quality', 10)
+        # Buffer for serial data
+        self.serial_buffer = ""
         
-        # Debug publisher
-        self.debug_pub = self.create_publisher(String, 'sensor_debug', 10)
+        # Lock for serial read/write operations
+        self.serial_lock = threading.Lock()
         
-        # Initialize serial port
-        self.get_logger().info(f"Opening {self.port} at {self.baudrate} baud")
+        # Start serial reading thread
+        self.serial_thread = threading.Thread(target=self.read_serial_data)
+        self.serial_thread.daemon = True
+        self.serial_thread.start()
+        
+        # For tracking data reception
+        self.last_data_time = time.time()
+        self.data_count = 0
+        
+        self.get_logger().info("STM32 Sensor node initialized")
+
+    def read_serial_data(self):
+        """Thread function to continuously read serial data"""
+        while rclpy.ok():
+            try:
+                with self.serial_lock:
+                    if self.ser.in_waiting > 0:
+                        data = self.ser.read(self.ser.in_waiting).decode('utf-8')
+                        # Log raw data if in debug mode
+                        if self.debug_level == 'debug':
+                            self.get_logger().debug(f"Read raw data: {data.strip()}")
+                        self.serial_buffer += data
+                        
+                        # Process complete lines
+                        while '\n' in self.serial_buffer:
+                            line, self.serial_buffer = self.serial_buffer.split('\n', 1)
+                            if line.strip():  # Skip empty lines
+                                # Log each complete line received
+                                if self.debug_level == 'debug':
+                                    self.get_logger().debug(f"Received raw data: {line.strip()}")
+                                self.process_sensor_data(line.strip())
+                    
+            except Exception as e:
+                self.get_logger().error(f"Serial read error: {e}")
+                time.sleep(1.0)  # Wait a bit before retrying
+
+    def process_sensor_data(self, data):
+        """Process sensor data received from STM32"""
         try:
-            self.ser = serial.Serial(
-                port=self.port,
-                baudrate=self.baudrate,
-                bytesize=serial.EIGHTBITS,
-                parity=serial.PARITY_NONE,
-                stopbits=serial.STOPBITS_ONE,
-                timeout=0.1
-            )
-            self.ser.reset_input_buffer()
-            self.get_logger().info("Serial port opened successfully")
-        except serial.SerialException as e:
-            self.get_logger().error(f"Failed to open port: {e}")
-            rclpy.shutdown()
-            return
+            # Parse comma-separated values
+            # Expected format: ultrasonic_left,ultrasonic_right,ultrasonic_front,imux,imuy,imuz,temperature,air_quality
+            values = data.split(',')
             
-        # Buffer for collecting bytes until a complete message
-        self.buffer = bytearray()
-        
-        # Create timer to read from serial port
-        self.timer = self.create_timer(0.05, self.read_serial)
-        
-        # Statistics
-        self.messages_received = 0
-        self.parsing_errors = 0
-        self.stats_timer = self.create_timer(5.0, self.print_stats)
-    
-    def read_serial(self):
-        """Read from serial port and process any complete messages"""
-        if not self.ser.is_open:
-            return
-            
-        try:
-            # Read any available data
-            if self.ser.in_waiting > 0:
-                data = self.ser.read(self.ser.in_waiting)
-                
-                # Add to our buffer
-                self.buffer.extend(data)
-                
-                # Process any complete messages in buffer
-                self.process_buffer()
-                
-        except serial.SerialException as e:
-            self.get_logger().error(f"Serial error: {e}")
-            if self.ser.is_open:
-                self.ser.close()
-    
-    def process_buffer(self):
-        """Process the buffer for complete messages ending with newline"""
-        while b'\n' in self.buffer:
-            # Find the end of the first complete message
-            newline_pos = self.buffer.find(b'\n')
-            
-            # Extract the message and convert to string
-            message = self.buffer[:newline_pos].decode('utf-8', errors='replace').strip()
-            
-            # Remove the processed message from buffer
-            self.buffer = self.buffer[newline_pos + 1:]
-            
-            # Parse and publish the data
-            self.parse_and_publish(message)
-    
-    def parse_and_publish(self, message):
-        """Parse the message and publish to appropriate topics"""
-        # Expected format: ultrasonic_left,ultrasonic_right,ultrasonic_front,imu_accel_x,imu_accel_y,imu_accel_z,bme,airquality
-        self.messages_received += 1
-        
-        # Debug publish
-        debug_msg = String()
-        debug_msg.data = f"Raw message: {message}"
-        self.debug_pub.publish(debug_msg)
-        
-        try:
-            # Split the message by commas
-            parts = message.split(',')
-            
-            # Ensure we have the expected number of values
-            if len(parts) != 8:
-                self.get_logger().warning(f"Received message with {len(parts)} values, expected 8: {message}")
-                self.parsing_errors += 1
+            if len(values) != 8:
+                self.get_logger().warn(f"Received malformed data: {data} (expected 8 values, got {len(values)})")
                 return
             
-            # Parse ultrasonic values
-            ultrasonic_left = float(parts[0])
-            ultrasonic_right = float(parts[1])
-            ultrasonic_front = float(parts[2])
-            
-            # Parse IMU linear acceleration values (not orientation)
-            imu_accel_x = float(parts[3])
-            imu_accel_y = float(parts[4])
-            imu_accel_z = float(parts[5])
-            
-            # Parse BME value
-            bme_value = float(parts[6])
-            
-            # Parse air quality (as a letter)
-            air_quality = parts[7]
-            
-            # Publish ultrasonic data with Range message type
-            self.publish_range(self.ultrasonic_left_pub, ultrasonic_left, "ultrasonic/left")
-            self.publish_range(self.ultrasonic_right_pub, ultrasonic_right, "ultrasonic/right")
-            self.publish_range(self.ultrasonic_front_pub, ultrasonic_front, "ultrasonic/front")
-            
-            # Publish IMU data with Imu message type
-            imu_msg = Imu()
-            imu_msg.header.stamp = self.get_clock().now().to_msg()
-            imu_msg.header.frame_id = "imu_link"
-            
-            # Set linear acceleration values
-            imu_msg.linear_acceleration.x = imu_accel_x
-            imu_msg.linear_acceleration.y = imu_accel_y
-            imu_msg.linear_acceleration.z = imu_accel_z
-            
-            # Set other fields to identity/zero
-            imu_msg.orientation.w = 1.0
-            imu_msg.orientation.x = 0.0
-            imu_msg.orientation.y = 0.0
-            imu_msg.orientation.z = 0.0
-            
-            # Set covariance to unknown
-            imu_msg.orientation_covariance = [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-            imu_msg.angular_velocity_covariance = [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-            imu_msg.linear_acceleration_covariance = [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]  # Known acceleration
-            
-            self.imu_pub.publish(imu_msg)
-            
-            # Publish BME data with Temperature message type
-            temp_msg = Temperature()
-            temp_msg.header.stamp = self.get_clock().now().to_msg()
-            temp_msg.header.frame_id = "bme_link"
-            temp_msg.temperature = bme_value
-            temp_msg.variance = 0.0  # Set to a suitable value if known
-            self.bme_pub.publish(temp_msg)
-            
-            # Publish air quality data
-            air_quality_msg = String()
-            air_quality_msg.data = air_quality
-            self.air_quality_pub.publish(air_quality_msg)
-            
-            # Consolidated logging of all sensor values
-            self.get_logger().info(
-                f"Ultrasonic: L={ultrasonic_left}, R={ultrasonic_right}, F={ultrasonic_front}, "
-                f"IMU accel: x={imu_accel_x}, y={imu_accel_y}, z={imu_accel_z}, "
-                f"BME Temp: {bme_value}, Air Quality: {air_quality}"
-            )
-            
-        except ValueError as e:
-            self.get_logger().error(f"Error parsing message: {e}")
-            self.parsing_errors += 1
-    
-    def publish_range(self, publisher, value, topic_name):
-        """Helper to publish a Range message with proper fields"""
-        msg = Range()
+            # Extract values (with error checking)
+            try:
+                ultrasonic_left = int(values[0])
+                ultrasonic_right = int(values[1])
+                ultrasonic_front = int(values[2])
+                imu_x = int(values[3])
+                imu_y = int(values[4])
+                imu_z = int(values[5])
+                temperature = float(values[6])
+                air_quality = values[7]
+                
+                # Track data reception statistics
+                self.data_count += 1
+                now = time.time()
+                if now - self.last_data_time >= 5.0:  # Log every 5 seconds
+                    rate = self.data_count / (now - self.last_data_time)
+                    self.get_logger().info(f"Data reception rate: {rate:.2f} Hz (received {self.data_count} packets in {now - self.last_data_time:.2f}s)")
+                    self.data_count = 0
+                    self.last_data_time = now
+                
+                # Log processed values in terminal for all debug levels
+                self.get_logger().info(
+                    f"Ultrasonic: L={ultrasonic_left}, R={ultrasonic_right}, F={ultrasonic_front}, "
+                    f"IMU: x={imu_x}, y={imu_y}, z={imu_z}, "
+                    f"BME Temp: {temperature}, Air Quality: {air_quality}"
+                )
+                
+                # Publish all sensor data
+                self.publish_ultrasonic_data(ultrasonic_left, ultrasonic_right, ultrasonic_front)
+                self.publish_imu_data(imu_x, imu_y, imu_z)
+                self.publish_temperature(temperature)
+                self.publish_air_quality(air_quality)
+                
+            except (ValueError, IndexError) as e:
+                self.get_logger().warn(f"Error parsing sensor data: {e}, raw data: {data}")
+                
+        except Exception as e:
+            self.get_logger().error(f"Error processing sensor data: {e}")
+
+    def publish_ultrasonic_data(self, left, right, front):
+        """Publish ultrasonic sensor data"""
+        # Helper function to create and fill Range message
+        def create_range_msg(distance, frame_id):
+            msg = Range()
+            msg.header.stamp = self.get_clock().now().to_msg()
+            msg.header.frame_id = frame_id
+            msg.radiation_type = Range.ULTRASOUND
+            msg.field_of_view = 0.26  # ~15 degrees in radians
+            msg.min_range = 0.02      # 2cm
+            msg.max_range = 4.0       # 400cm
+            msg.range = distance / 100.0  # Convert cm to meters
+            return msg
+        
+        # Publish data for each ultrasonic sensor
+        self.ultrasonic_left_pub.publish(create_range_msg(left, 'ultrasonic_left_link'))
+        self.ultrasonic_right_pub.publish(create_range_msg(right, 'ultrasonic_right_link'))
+        self.ultrasonic_front_pub.publish(create_range_msg(front, 'ultrasonic_front_link'))
+
+    def publish_imu_data(self, x, y, z):
+        """Publish IMU data"""
+        # Create and fill IMU message
+        imu_msg = Imu()
+        imu_msg.header.stamp = self.get_clock().now().to_msg()
+        imu_msg.header.frame_id = 'imu_link'
+        
+        # Convert raw accelerometer values to m/s^2
+        # Note: These conversion factors depend on your IMU settings
+        # For MPU6050 with FS_ACC_4G setting:
+        accel_scale = 9.81 * 4.0 / 32768.0  # 4g range, convert to m/s^2
+        
+        # Set linear accelerations
+        imu_msg.linear_acceleration.x = x * accel_scale
+        imu_msg.linear_acceleration.y = y * accel_scale
+        imu_msg.linear_acceleration.z = z * accel_scale
+        
+        # Set covariance (example values, should be tuned)
+        accel_cov = 0.01  # m/s^2
+        imu_msg.linear_acceleration_covariance = [
+            accel_cov, 0.0, 0.0,
+            0.0, accel_cov, 0.0,
+            0.0, 0.0, accel_cov
+        ]
+        
+        # Orientation is not provided by the STM32 code, set to identity quaternion
+        imu_msg.orientation.w = 1.0
+        imu_msg.orientation.x = 0.0
+        imu_msg.orientation.y = 0.0
+        imu_msg.orientation.z = 0.0
+        
+        # Set orientation covariance to -1 indicating orientation not available
+        imu_msg.orientation_covariance = [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        
+        # Angular velocity not provided
+        imu_msg.angular_velocity_covariance = [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        
+        # Publish the IMU message
+        self.imu_pub.publish(imu_msg)
+        
+        # Broadcast IMU transform
+        self.broadcast_imu_tf()
+
+    def broadcast_imu_tf(self):
+        """Broadcast IMU transform"""
+        t = TransformStamped()
+        t.header.stamp = self.get_clock().now().to_msg()
+        t.header.frame_id = 'base_link'
+        t.child_frame_id = 'imu_link'
+        
+        # Set translation (example position)
+        t.transform.translation.x = 0.0
+        t.transform.translation.y = 0.0
+        t.transform.translation.z = 0.1
+        
+        # Set rotation (identity)
+        t.transform.rotation.w = 1.0
+        t.transform.rotation.x = 0.0
+        t.transform.rotation.y = 0.0
+        t.transform.rotation.z = 0.0
+        
+        # Send the transform
+        self.tf_broadcaster.sendTransform(t)
+
+    def publish_temperature(self, temp):
+        """Publish temperature data"""
+        msg = Temperature()
         msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = topic_name.split('/')[-1] + "_link"
-        msg.radiation_type = Range.ULTRASOUND
-        msg.field_of_view = 0.1  # Typical value in radians
-        msg.min_range = 0.02  # Typical minimum range in meters
-        msg.max_range = 4.0   # Typical maximum range in meters
-        msg.range = value
-        publisher.publish(msg)
-    
-    def print_stats(self):
-        """Print statistics"""
-        self.get_logger().info("\n--- SENSOR STATISTICS ---")
-        self.get_logger().info(f"Messages received: {self.messages_received}")
-        self.get_logger().info(f"Parsing errors: {self.parsing_errors}")
-        self.get_logger().info(f"Success rate: {(self.messages_received - self.parsing_errors) / max(1, self.messages_received):.2%}")
-        self.get_logger().info("------------------------\n")
+        msg.header.frame_id = 'temperature_sensor'
+        msg.temperature = temp
+        msg.variance = 0.05  # Example variance value
+        
+        self.temp_pub.publish(msg)
+
+    def publish_air_quality(self, quality):
+        """Publish air quality data"""
+        msg = String()
+        if quality == 'G':
+            msg.data = "Gas detected"
+        else:
+            msg.data = "Normal"
+        
+        self.gas_pub.publish(msg)
+
+    def timer_callback(self):
+        """Timer callback for periodic tasks"""
+        # Check if we're receiving data (add a warning if no data for a while)
+        now = time.time()
+        if now - self.last_data_time > 5.0 and self.data_count == 0:
+            self.get_logger().warn("No sensor data received in the last 5 seconds")
+
+    def cleanup(self):
+        """Clean up before node shutdown"""
+        if hasattr(self, 'ser') and self.ser.is_open:
+            try:
+                with self.serial_lock:
+                    self.ser.close()
+                    self.get_logger().info("Closed serial connection")
+            except Exception as e:
+                self.get_logger().error(f"Error closing serial connection: {e}")
 
 def main(args=None):
     rclpy.init(args=args)
-    node = SensorDataReader()
+    node = STM32SensorNode()
     
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     finally:
-        if hasattr(node, 'ser') and node.ser and node.ser.is_open:
-            node.ser.close()
-            node.get_logger().info("Serial port closed")
+        node.cleanup()
         node.destroy_node()
         rclpy.shutdown()
 
