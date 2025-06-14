@@ -10,6 +10,7 @@ setup.py
 ../../build/pyserial_connection/pyserial_connection.egg-info/zip-safe
 launch/test_launch.py
 pyserial_connection/__init__.py
+pyserial_connection/claude_decisionmaking.py
 pyserial_connection/claude_reader.py
 pyserial_connection/claude_readerandsender.py
 pyserial_connection/claude_sender.py

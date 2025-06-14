@@ -39,6 +39,7 @@ setup(
             'claude_reader = pyserial_connection.claude_reader:main',
             'claude_sender = pyserial_connection.claude_sender:main',
             'claude_readerandsender = pyserial_connection.claude_readerandsender:main',
+            'claude_decisionmaking = pyserial_connection.claude_decisionmaking:main',
         ],
     },
 )

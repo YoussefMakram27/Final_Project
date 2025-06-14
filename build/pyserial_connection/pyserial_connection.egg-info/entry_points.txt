@@ -1,4 +1,5 @@
 [console_scripts]
+claude_decisionmaking = pyserial_connection.claude_decisionmaking:main
 claude_reader = pyserial_connection.claude_reader:main
 claude_readerandsender = pyserial_connection.claude_readerandsender:main
 claude_sender = pyserial_connection.claude_sender:main

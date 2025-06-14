@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Range, Imu, Temperature
+from sensor_msgs.msg import Range, Temperature
 from std_msgs.msg import String
-from tf2_ros import TransformBroadcaster
-from geometry_msgs.msg import TransformStamped
 import serial
 import threading
 import time
@@ -41,12 +39,10 @@ class STM32SensorNode(Node):
         self.ultrasonic_left_pub = self.create_publisher(Range, 'ultrasonic/left', 10)
         self.ultrasonic_right_pub = self.create_publisher(Range, 'ultrasonic/right', 10)
         self.ultrasonic_front_pub = self.create_publisher(Range, 'ultrasonic/front', 10)
-        self.imu_pub = self.create_publisher(Imu, 'imu/data_raw', 10)
+        self.ultrasonic_leftback_pub = self.create_publisher(Range, 'ultrasonic/leftback', 10)
+        self.ultrasonic_rightback_pub = self.create_publisher(Range, 'ultrasonic/rightback', 10)
         self.temp_pub = self.create_publisher(Temperature, 'sensors/temperature', 10)
         self.gas_pub = self.create_publisher(String, 'sensors/air_quality', 10)
-        
-        # Initialize transform broadcaster for IMU
-        self.tf_broadcaster = TransformBroadcaster(self)
         
         # Create a timer for publishing data
         self.timer = self.create_timer(1.0/self.publish_rate, self.timer_callback)
@@ -97,11 +93,11 @@ class STM32SensorNode(Node):
         """Process sensor data received from STM32"""
         try:
             # Parse comma-separated values
-            # Expected format: ultrasonic_left,ultrasonic_right,ultrasonic_front,imux,imuy,imuz,temperature,air_quality
+            # Expected format: ultrasonic_left,ultrasonic_right,ultrasonic_front,ultrasonic_leftback,ultrasonic_rightback,temperature,air_quality
             values = data.split(',')
             
-            if len(values) != 8:
-                self.get_logger().warn(f"Received malformed data: {data} (expected 8 values, got {len(values)})")
+            if len(values) != 7:
+                self.get_logger().warn(f"Received malformed data: {data} (expected 7 values, got {len(values)})")
                 return
             
             # Extract values (with error checking)
@@ -109,11 +105,10 @@ class STM32SensorNode(Node):
                 ultrasonic_left = int(values[0])
                 ultrasonic_right = int(values[1])
                 ultrasonic_front = int(values[2])
-                imu_x = int(values[3])
-                imu_y = int(values[4])
-                imu_z = int(values[5])
-                temperature = float(values[6])
-                air_quality = values[7]
+                ultrasonic_leftback = int(values[3])
+                ultrasonic_rightback = int(values[4])
+                temperature = float(values[5])
+                air_quality = values[6]
                 
                 # Track data reception statistics
                 self.data_count += 1
@@ -127,13 +122,13 @@ class STM32SensorNode(Node):
                 # Log processed values in terminal for all debug levels
                 self.get_logger().info(
                     f"Ultrasonic: L={ultrasonic_left}, R={ultrasonic_right}, F={ultrasonic_front}, "
-                    f"IMU: x={imu_x}, y={imu_y}, z={imu_z}, "
+                    f"LB={ultrasonic_leftback}, RB={ultrasonic_rightback}, "
                     f"BME Temp: {temperature}, Air Quality: {air_quality}"
                 )
                 
                 # Publish all sensor data
-                self.publish_ultrasonic_data(ultrasonic_left, ultrasonic_right, ultrasonic_front)
-                self.publish_imu_data(imu_x, imu_y, imu_z)
+                self.publish_ultrasonic_data(ultrasonic_left, ultrasonic_right, ultrasonic_front, 
+                                           ultrasonic_leftback, ultrasonic_rightback)
                 self.publish_temperature(temperature)
                 self.publish_air_quality(air_quality)
                 
@@ -143,7 +138,7 @@ class STM32SensorNode(Node):
         except Exception as e:
             self.get_logger().error(f"Error processing sensor data: {e}")
 
-    def publish_ultrasonic_data(self, left, right, front):
+    def publish_ultrasonic_data(self, left, right, front, leftback, rightback):
         """Publish ultrasonic sensor data"""
         # Helper function to create and fill Range message
         def create_range_msg(distance, frame_id):
@@ -161,70 +156,8 @@ class STM32SensorNode(Node):
         self.ultrasonic_left_pub.publish(create_range_msg(left, 'ultrasonic_left_link'))
         self.ultrasonic_right_pub.publish(create_range_msg(right, 'ultrasonic_right_link'))
         self.ultrasonic_front_pub.publish(create_range_msg(front, 'ultrasonic_front_link'))
-
-    def publish_imu_data(self, x, y, z):
-        """Publish IMU data"""
-        # Create and fill IMU message
-        imu_msg = Imu()
-        imu_msg.header.stamp = self.get_clock().now().to_msg()
-        imu_msg.header.frame_id = 'imu_link'
-        
-        # Convert raw accelerometer values to m/s^2
-        # Note: These conversion factors depend on your IMU settings
-        # For MPU6050 with FS_ACC_4G setting:
-        accel_scale = 9.81 * 4.0 / 32768.0  # 4g range, convert to m/s^2
-        
-        # Set linear accelerations
-        imu_msg.linear_acceleration.x = x * accel_scale
-        imu_msg.linear_acceleration.y = y * accel_scale
-        imu_msg.linear_acceleration.z = z * accel_scale
-        
-        # Set covariance (example values, should be tuned)
-        accel_cov = 0.01  # m/s^2
-        imu_msg.linear_acceleration_covariance = [
-            accel_cov, 0.0, 0.0,
-            0.0, accel_cov, 0.0,
-            0.0, 0.0, accel_cov
-        ]
-        
-        # Orientation is not provided by the STM32 code, set to identity quaternion
-        imu_msg.orientation.w = 1.0
-        imu_msg.orientation.x = 0.0
-        imu_msg.orientation.y = 0.0
-        imu_msg.orientation.z = 0.0
-        
-        # Set orientation covariance to -1 indicating orientation not available
-        imu_msg.orientation_covariance = [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        
-        # Angular velocity not provided
-        imu_msg.angular_velocity_covariance = [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        
-        # Publish the IMU message
-        self.imu_pub.publish(imu_msg)
-        
-        # Broadcast IMU transform
-        self.broadcast_imu_tf()
-
-    def broadcast_imu_tf(self):
-        """Broadcast IMU transform"""
-        t = TransformStamped()
-        t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = 'base_link'
-        t.child_frame_id = 'imu_link'
-        
-        # Set translation (example position)
-        t.transform.translation.x = 0.0
-        t.transform.translation.y = 0.0
-        t.transform.translation.z = 0.1
-        
-        # Set rotation (identity)
-        t.transform.rotation.w = 1.0
-        t.transform.rotation.x = 0.0
-        t.transform.rotation.y = 0.0
-        t.transform.rotation.z = 0.0
-        
-        # Send the transform
-        self.tf_broadcaster.sendTransform(t)
+        self.ultrasonic_leftback_pub.publish(create_range_msg(leftback, 'ultrasonic_leftback_link'))
+        self.ultrasonic_rightback_pub.publish(create_range_msg(rightback, 'ultrasonic_rightback_link'))
 
     def publish_temperature(self, temp):
         """Publish temperature data"""
